@@ -1,0 +1,374 @@
+
+Create Database newMovies
+go
+use newMovies
+go
+-----------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_gettblUsers')
+Drop Procedure sp_gettblUsers
+go
+CREATE PROCEDURE sp_gettblUsers
+		AS
+		BEGIN
+		select * from [newMovies].[dbo].[tblUsers]
+	END
+drop procedure sp_gettblUsers
+------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_AddUsers')
+	DROP PROCEDURE sp_AddUsers
+	GO
+CREATE PROCEDURE sp_AddUsers( @firstname varchar(100),@lastname varchar(100),@email varchar(100), @cellnum bigint,@age int, @gender varchar(50), @username varchar(50), @password varchar(50), @usertypeid int)
+AS
+BEGIN
+IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'tblUsers') 
+		IF NOT EXISTS(SELECT * FROM tblUsers WHERE email=@email OR username=@username)
+		INSERT INTO tblUsers VALUES (@firstname, @lastname, @email, @cellnum, @age, @gender, @username, @password, @usertypeid)
+		END
+-----------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='createtblUsers')
+	DROP PROCEDURE createtblUsers
+	GO
+		CREATE PROCEDURE createtblUsers
+		AS
+		IF NOT EXISTS(SELECT *
+						FROM
+						information_schema.tables
+						WHERE TABLE_NAME = 'tblUsers')
+		BEGIN
+CREATE TABLE [newMovies].[dbo].[tblUsers](
+	[CustomerID] [int] IDENTITY(1,1) Primary key NOT NULL,
+	[firstname] [varchar](100) NOT NULL,
+	[lastname] [varchar](100) NOT NULL,
+	[email] [varchar](100) NOT NULL,
+	[phonenumber] float NOT NULL,
+	[age] [int] NOT NULL,
+	[gender] [varchar](50),
+	[username] [varchar](50) NOT NULL,
+	[password] [varchar](50),
+	[usertypeid] [int]
+	)
+end
+go
+----------------------------------------
+-------drop table tblUsers		
+------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_login')
+	DROP PROCEDURE sp_login
+	GO
+create procedure sp_login(@email varchar(50),@password varchar(50))
+as
+begin 
+Select * from tblUsers where email=@email and password=@password
+end
+------------------------------
+------drop table [newMovies].[dbo].[tblGenres]
+------drop procedure sp_tblGenres
+------------------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_tblGenres')
+	DROP PROCEDURE sp_tblGenres
+	GO
+create procedure sp_tblGenres
+as
+begin 
+create table [newMovies].[dbo].[tblGenres]
+([GenreID] int identity(1,1) primary key,
+[GenreName] varchar(50) not null
+)
+end
+go
+------------------------------
+---select * from [newMovies].[dbo].[tblGenres]
+------------------------
+---drop procedure checkEmailExistance
+
+--------------------------
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='checkUsernameExistance')
+	DROP PROCEDURE checkUsernameExistance
+	GO
+CREATE PROCEDURE checkUsernameExistance (@username VARCHAR(50))
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'tbl_Users') 
+		SELECT COUNT(1) FROM tblUsers WHERE Username=@username
+		GO
+
+---------------------------------------
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='checkEmailExistance')
+	DROP PROCEDURE checkEmailExistance
+	GO
+CREATE PROCEDURE checkEmailExistance (@email VARCHAR(50))
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'tblUsers') 
+		SELECT COUNT(1) FROM tblUsers WHERE email=@email
+		GO
+
+------------------------------------
+
+--drop procedure sp_AddGenre
+-------------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_AddGenre')
+	DROP PROCEDURE sp_AddGenre
+	GO
+CREATE PROCEDURE sp_AddGenre (@genrename VARCHAR(50))
+		AS
+		
+		INSERT INTO tblGenres VALUES (@genrename)
+		SELECT * FROM tblGenres WHERE GenreName=@genrename
+		GO
+
+--EXEC sp_AddGenre 'Action'
+--EXEC sp_AddGenre 'Comedy'
+--EXEC sp_AddGenre 'Romance'
+--EXEC sp_AddGenre 'Thriller'
+--EXEC sp_AddGenre 'Sci-Fi'
+--EXEC sp_AddGenre 'Horror'
+--EXEC sp_AddGenre 'Mystery'
+--EXEC sp_AddGenre 'Animation'
+--EXEC sp_AddGenre 'Music'
+--EXEC sp_AddGenre 'Drama'
+--EXEC sp_AddGenre 'War'
+
+---------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_getusertypeID')
+	DROP PROCEDURE sp_getusertypeID
+	GO
+create procedure sp_getusertypeID(@email varchar)
+as 
+select usertypeid from tblUsers where email=@email
+go
+-----------------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_getGenreID')
+	DROP PROCEDURE sp_getGenreID
+	GO
+CREATE PROCEDURE sp_getGenreID (@genrename VARCHAR(50))
+		AS
+		begin
+		--IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'tbl_Genres') 
+		SELECT GenreID FROM tblGenres WHERE GenreName=@genrename
+		end
+---------------------------------------------------
+--exec sp_getGenreID 'Horror'
+--------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_getGenreName')
+	DROP PROCEDURE sp_getGenreName
+	GO
+CREATE PROCEDURE sp_getGenreName(@genreid int)
+as
+begin 
+select GenreName FROM tblGenres WHERE GenreID=@genreid
+end 
+-----------------------------------
+---exec sp_getGenreName 4
+---exec sp_GenresIdWRTMoviesId 4
+
+---------------------------------------------------
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_GenresIdWRTMoviesId')
+	DROP PROCEDURE sp_GenresIdWRTMoviesId
+	GO
+CREATE Procedure sp_GenresIdWRTMoviesId(@movieid int)
+as
+begin
+select GenreID from tblMovieGenreCon where MovieID=@movieid
+select * from tblMovieGenreCon
+drop table tblMovieGenreCon
+end
+-------------------------------------------------
+
+--below is table
+--create table [newMovies].[dbo].[tblMovieGenreCon](
+--[MovieGenreID] INT IDENTITY (1,1) NOT NULL PRIMARY KEY,
+--				[MovieID] INT NOT NULL,
+--				[GenreID] INT NOT NULL			  )
+
+--drop procedure sp_GenresIdWRTMoviesId
+-----------------------------
+
+--CREATE TABLE [newMovies].[dbo].[tblMovies]
+--			(
+--				[MovieID] INT IDENTITY (1,1) NOT NULL PRIMARY KEY,
+--				[Name] VARCHAR(50) NOT NULL,
+--				[Length] VARCHAR(50) NOT NULL,
+--				[Price] INT NOT NULL,
+--				[Description] VARCHAR(500) NOT NULL	 
+--			)
+--drop table [newMovies].[dbo].[tbl_Movies]
+------------------------------------
+--drop procedure sp_AddMovie
+
+--------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_AddMovie ')
+	DROP PROCEDURE sp_AddMovie 
+	GO
+CREATE PROCEDURE sp_AddMovie (@name VARCHAR(50),
+									@length VARCHAR(50),
+									@price INT,
+									@description VARCHAR(50))
+		AS
+		--IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'tblMovies') 
+		
+		Begin
+		
+		INSERT INTO tblMovies VALUES (@name, @length, @price, @description)
+		(SELECT * FROM tblMovies WHERE [Name]=@name )
+		End
+	go
+
+--------------------------------
+--EXEC sp_AddMovie 'Interstellar', '3h 26m 12s', 60, 'This movie is based on space life and time stretching'
+--EXEC sp_AddMovie 'Spiderman', '2h 55m 54s', 40, 'All related to web'
+--EXEC sp_AddMovie 'Godzilla', '2h 58m 49s', 40, 'Animals related'
+--EXEC sp_AddMovie 'Deadpool', '3h 13m 28s', 45, 'Funny'
+--EXEC sp_AddMovie 'Batman', '2h 49m 17s', 60, 'Batman'
+--EXEC sp_AddMovie 'Avengers', '2h 31m 37s', 55, 'Avengers'
+--EXEC sp_AddMovie 'Inception', '3h 19m 31s', 40, 'Inception'
+--EXEC sp_AddMovie 'Top Gun', '2h 33m 23s', 35, 'Top Gun'
+--EXEC sp_AddMovie 'Joker', '2h 56m 32s', 40, 'Joker'
+--EXEC sp_AddMovie 'Jurassic Park', '3h 10m 44s', 55, 'Jurassic Park'
+--EXEC sp_AddMovie 'Aquaman', '2h 23m 11s', 60, 'Aquaman'
+--EXEC sp_AddMovie 'Fast and Furious', '2h 42m 45s', 50, 'Fast and Furious'
+
+-----------------------------
+---drop procedure getMovieID
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_getMovieID')
+	DROP PROCEDURE sp_getMovieID
+	GO
+CREATE PROCEDURE sp_getMovieID (@name VARCHAR(50))
+		AS
+		begin
+		SELECT MovieID FROM tblMovies WHERE [Name]=@name
+		end
+---------------------
+
+
+---drop procedure sp_getMovieDetails
+
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_getMovieDetails')
+	DROP PROCEDURE sp_getMovieDetails
+	GO
+CREATE PROCEDURE sp_getMovieDetails (@movieid INT)
+		AS		
+		SELECT * FROM tblMovies WHERE MovieID=@movieid
+		go
+-----------------------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_SaveMovieGenres')
+	DROP PROCEDURE sp_SaveMovieGenres
+	GO
+drop procedure sp_SaveMovieGenres
+CREATE PROCEDURE sp_SaveMovieGenres (	@movieid INT,
+											@genreid INT)
+		AS
+	
+		INSERT INTO tblMovieGenreCon VALUES (@movieid, @genreid)
+		(SELECT * FROM tblMovieGenreCon WHERE MovieID=@movieid AND GenreID=@genreid)
+		go
+-------------------------------------------
+--EXEC sp_SaveMovieGenres 2, 15
+--EXEC sp_SaveMovieGenres 3, 14
+--EXEC sp_SaveMovieGenres 4, 13
+--EXEC sp_SaveMovieGenres 5, 12
+--EXEC sp_SaveMovieGenres 6, 11
+--EXEC sp_SaveMovieGenres 7, 10
+--EXEC sp_SaveMovieGenres 8, 19
+--EXEC sp_SaveMovieGenres 9, 18
+--EXEC sp_SaveMovieGenres 11, 13
+
+------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_getAllMovies')
+	DROP PROCEDURE sp_getAllMovies
+	GO
+CREATE PROCEDURE sp_getAllMovies
+		AS
+		
+		SELECT * FROM tblMovies
+exec sp_getAllMovies
+go
+-------------------------
+
+create procedure sp_getUserId(@username VARCHAR(50))
+as
+SELECT CustomerID FROM tblUsers WHERE [username]=@username
+
+exec sp_getUserId 'shazil123'
+-------------------------
+---drop procedure sp_getUserDetails
+
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_getUserDetails')
+	DROP PROCEDURE sp_getUserDetails
+	GO
+CREATE PROCEDURE sp_getUserDetails (@email VARCHAR(50))
+		AS		
+		SELECT * FROM tblUsers WHERE [email]=@email
+go
+---exec sp_getUserDetails 'shazil123'
+--------------------------------------
+
+
+
+--CREATE TABLE [newMovies].[dbo].[tblCheckouts]
+--			(
+--				[CheckoutID] INT IDENTITY (1,1) PRIMARY KEY NOT NULL,
+--				[CustomerID] INT NOT NULL,
+--				[Username] VARCHAR(50) NOT NULL,
+--				[Date] VARCHAR (50) NOT NULL,
+--				[Time] VARCHAR (50) NOT NULL,
+--				[TotalPrice] INT NOT NULL
+--			)
+
+--select * from [newMovies].[dbo].[tblCheckouts]
+------------------------------------
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_saveCheckout')
+	DROP PROCEDURE sp_saveCheckout
+	GO
+CREATE PROCEDURE sp_saveCheckout (@customerid INT,@username VARCHAR(50),@date VARCHAR(50),@time VARCHAR(50),@totalprice INT)
+		AS
+		INSERT INTO tblCheckouts VALUES (@customerid, @username, @date, @time, @totalprice)
+		go
+
+------------------------------
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_lastChecoutID')
+	DROP PROCEDURE sp_lastChecoutID
+	GO
+create procedure sp_lastChecoutID
+as
+SELECT MAX(CheckoutID) FROM tblCheckouts
+go
+
+----------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_retMoviePrice')
+	DROP PROCEDURE sp_retMoviePrice
+	GO
+CREATE PROCEDURE sp_retMoviePrice (@movieid INT)
+		AS	
+		SELECT Price FROM tblMovies WHERE MovieID=@movieid
+go
+-------------------------------
+--exec sp_retMoviePrice '5'
+-----------------------------------------
+--CREATE TABLE [newMovies].[dbo].[tblConCheckoutMovie]
+--			(
+--				[CheckoutMovieID] INT IDENTITY (1,1) PRIMARY KEY NOT NULL,
+--				[CheckoutID] INT NOT NULL,
+--				[MovieID] INT NOT NULL
+--			)
+---------------------------------------------
+--drop procedure saveCheckedoutMovies
+----------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_saveCheckedoutMovies')
+	DROP PROCEDURE sp_saveCheckedoutMovies
+	GO
+CREATE PROCEDURE sp_saveCheckedoutMovies (@checkoutid INT,@movieid INT)
+		AS	
+		INSERT INTO tblConCheckoutMovie VALUES (@checkoutid, @movieid)
+		go
+-------------------------------------------
+--select * from tblConCheckoutMovie
+------------------------------------------------
+
+--select*from tblUsers
